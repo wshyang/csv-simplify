@@ -42,25 +42,26 @@ The input CSV file contains a command string that starts with a path and has ano
 
 | Command/Events | Reference |
 | -------------- | --------- |
-| /usr/bin/python /home/user/file.txt |  |
+| /usr/bin/python /home/user/file1.txt /home/user/file2.txt |  |
 
 The input dataframe after processing:
 
 | Command/Events | Reference |
 | -------------- | --------- |
-| /usr/bin/python PATH | [1] |
+| /usr/bin/python PATH PATH | [1,2] |
 
 The references dataframe should contain:
 
 | Index | Value | Count |
 | ----- | ----- | ----- |
-| 1 | /home/user/file.txt | 1 |
+| 1 | /home/user/file1.txt | 1 |
+| 2 | /home/user/file2.txt | 1 |
 
 The pivot table should contain:
 
 | Command/Events | Reference |
 | -------------- | --------- |
-| /usr/bin/python PATH | 1 |
+| /usr/bin/python PATH PATH | 1 |
 
 ## 3. Functions
 The program defines the following functions to perform the simplification and replacement of the command strings, the generation of the references, the saving and loading of the program state, the writing of the output file, and the processing of the input file.
