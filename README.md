@@ -90,7 +90,7 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | /usr/bin/python PATH PATH | 1 |
 
@@ -355,7 +355,7 @@ The references dataframe should be empty:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo hello | 1 |
 
@@ -380,7 +380,7 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo ALPHANUM8 | 1 |
 
@@ -405,7 +405,7 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo PATH | 1 |
 
@@ -430,7 +430,7 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo NUMERIC | 1 |
 
@@ -455,6 +455,6 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo HOSTNAME | 1 |
