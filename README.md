@@ -240,7 +240,7 @@ The program defines a function `process_file` that takes the file name as an arg
   - Call the save_state function with the file name, the input dataframe, the original dataframe, and the counter as arguments. This will save the current progress of the program to a state file.
   - Print a message to the standard output that shows how many lines have been processed and what percentage of the total that is.
   - Calculate the average time per line and the remaining time based on the current time and the start time. Print a message to the standard output that shows the estimated time to finish the program.
-- After the loop is finished, create a pivot table of the simplified commands and their counts using the `pivot_table` function of pandas. The pivot table has the simplified command strings as the index and the counts as the values.
+- After the loop is finished, create a pivot table of the simplified commands and their counts using the `pivot_table` function of pandas. The pivot table has a column named "Pattern" that contains the simplified command strings and a column named "Count" that contains the counts of the simplified command strings.
 - Write the `input_df`, the `original` dataframe and the pivot table to the output Excel file using the `write_output` function.
 - Delete the state file using the `delete_state` function.
 
