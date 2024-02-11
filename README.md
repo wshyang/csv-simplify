@@ -59,7 +59,7 @@ The references dataframe should contain:
 
 The pivot table should contain:
 
-| Command/Events | Reference |
+| Command/Events | Count |
 | -------------- | --------- |
 | echo ALPHANUM8 PATH NUMERIC HOSTNAME | 2 |
 
