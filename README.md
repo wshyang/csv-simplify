@@ -119,25 +119,25 @@ The function uses the following logic and algorithm to perform the simplificatio
 - Return the simplified string, the list of original strings, and the list of replacement strings
 
 ### 3.2 Generate References Function
-The program defines a function `generate_references` that takes a list of original strings and the original dataframe as arguments and returns a reference value using the reference generation rules.
+The program defines a function `generate_references` that takes a list of original strings and the original mapping dataframe as arguments and returns a reference value using the reference generation rules.
 
 - The reference value is a list of integers of the reference values that correspond to the index of the original strings in the references dataframe in the same order as they appear in the command string.
-- The function modifies the original dataframe in place according to the reference generation rules. The original dataframe contains the original values and their counts in two columns: "Value" and "Count".
+- The function modifies the original mapping dataframe in place according to the reference generation rules. The original mapping dataframe contains the original values and their counts in two columns: "Value" and "Count".
 
 The function uses the following logic and algorithm to perform the reference generation:
 
 - Initialize the reference value as an empty list
 - For each original string, do the following:
-  - Check if the original string is already in the original dataframe
-  - If yes, get the index of the original string in the original dataframe
-  - Increment the count of the original string in the original dataframe by one
-  - If no, get the index of the original string as the length of the original dataframe
-  - Append the original string and its count to the original dataframe
+  - Check if the original string is already in the original mapping dataframe
+  - If yes, get the index of the original string in the original mapping dataframe
+  - Increment the count of the original string in the original mapping dataframe by one
+  - If no, get the index of the original string as the length of the original mapping dataframe
+  - Append the original string and its count to the original mapping dataframe
   - Generate the reference value by appending the index number to the list
 - Return the reference value
 
 ### 3.3 Save State Function
-The program defines a function `save_state` that takes the file name, the input dataframe, the original dataframe, and the counter as arguments and saves them to the state file using the pickle module.
+The program defines a function `save_state` that takes the file name, the input dataframe, the original mapping dataframe, and the counter as arguments and saves them to the state file using the pickle module.
 
 - The state file is named "program_state.pkl" and contains the program state as a dictionary with the following keys and values:
   - "file_name": the name of the input CSV file
@@ -149,12 +149,12 @@ The program defines a function `save_state` that takes the file name, the input 
 The function uses the following logic and algorithm to perform the state saving:
 
 - Open the state file in write mode using the pickle module
-- Create a dictionary named "state" with the file name, the input dataframe, the original dataframe, and the counter as the keys and values
+- Create a dictionary named "state" with the file name, the input dataframe, the original mapping dataframe, and the counter as the keys and values
 - Dump the state dictionary to the state file using the pickle module
 - Close the state file
 
 ### 3.4 Load State Function
-The program defines a function `load_state` that takes the file name as an argument and loads the program state from the state file if it exists and the file name matches the current file. It returns the input dataframe, the original dataframe, and the counter.
+The program defines a function `load_state` that takes the file name as an argument and loads the program state from the state file if it exists and the file name matches the current file. It returns the input dataframe, the original mapping dataframe, and the counter.
 
 - The state file is named "program_state.pkl" and contains the program state as a dictionary with the following keys and values:
   - "file_name": the name of the input CSV file
@@ -172,8 +172,8 @@ The function uses the following logic and algorithm to perform the state loading
   - Close the state file
   - Check if the file name matches the current file
   - If the file name matches, do the following:
-    - Get the input dataframe, the original dataframe, and the counter from the state dictionary
-    - Return the input dataframe, the original dataframe, and the counter
+    - Get the input dataframe, the original mapping dataframe, and the counter from the state dictionary
+    - Return the input dataframe, the original mapping dataframe, and the counter
   - If the file name does not match, do the following:
     - Return None, None, and 0
 - If the state file does not exist, do the following:
@@ -196,7 +196,7 @@ The function uses the following logic and algorithm to perform the state deletio
   - Delete the state file using the os module
 
 ### 3.6 Write Output Function
-The program defines a function `write_output` that takes the file name, the input dataframe, the original dataframe, and the pivot table as arguments and writes them to the output Excel file in separate tabs using the `to_excel` method of pandas with the `index=True` argument to preserve the index of the dataframes.
+The program defines a function `write_output` that takes the file name, the input dataframe, the original mapping dataframe, and the pivot table as arguments and writes them to the output Excel file in separate tabs using the `to_excel` method of pandas with the `index=True` argument to preserve the index of the dataframes.
 
 - The output Excel file is named by appending a suffix of "_simplified" to the source file name. For example, if the input file name is "commands.csv", the output file name will be "commands_simplified.xlsx".
 - The output Excel file has four tabs: "Simplified", "Original", "Pattern Counts", and "Command Patterns".
@@ -219,7 +219,7 @@ The function uses the following logic and algorithm to perform the output writin
     - Get the subset of the input dataframe for the current chunk using the `iloc` method of pandas with the start and end row numbers as the arguments
     - Generate the sheet name for the current chunk using the formula `"Simplified_" + str(end + 2)`
     - Write the subset of the input dataframe to the writer object with the sheet name and the index argument set to True using the `to_excel` method of pandas
-- Write the original dataframe to the writer object with the sheet name "Original" and the index argument set to True using the `to_excel` method of pandas
+- Write the original mapping dataframe to the writer object with the sheet name "Original" and the index argument set to True using the `to_excel` method of pandas
 - Write the pattern counts to the writer object with the sheet name "Pattern Counts" and the index argument set to True using the `to_excel` method of pandas
 - Write the pivot table to the writer object with the sheet name "Command Patterns" and the index argument set to True using the `to_excel` method of pandas
 - Save the writer object using the `save` method of pandas
@@ -233,11 +233,11 @@ The program defines a function `process_file` that takes the file name as an arg
 - Assign the current time to a variable named `start_time`.
 - Loop through the rows of the `input_df` dataframe starting from the `counter` value and get the command string from the "Command/Events" column.
 - Simplify and replace the command string with the simplified string and the list of original strings using the `simplify_and_replace` function.
-- Generate the reference value and the updated original dataframe using the `generate_references` function with the list of original strings and the original dataframe as arguments.
+- Generate the reference value and the updated original mapping dataframe using the `generate_references` function with the list of original strings and the original mapping dataframe as arguments.
   - Update the `input_df` dataframe with the simplified string and the reference value in a new column named "Reference".
   - Increment the `counter` by one.
 - Every time the counter is a multiple of 0.5% of the total number of lines, do the following:
-  - Call the save_state function with the file name, the input dataframe, the original dataframe, and the counter as arguments. This will save the current progress of the program to a state file.
+  - Call the save_state function with the file name, the input dataframe, the original mapping dataframe, and the counter as arguments. This will save the current progress of the program to a state file.
   - Print a message to the standard output that shows how many lines have been processed and what percentage of the total that is.
   - Calculate the average time per line and the remaining time based on the current time and the start time. Print a message to the standard output that shows the estimated time to finish the program.
 - After the loop is finished, create a pivot table of the simplified commands and their counts using the `pivot_table` function of pandas. The pivot table has a column named "Pattern" that contains the simplified command strings and a column named "Count" that contains the counts of the simplified command strings.
