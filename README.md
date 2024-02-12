@@ -1,13 +1,13 @@
 # csv-simplify
 
 ## 1. Introduction
-This document describes the functional specifications of a program that simplifies and analyzes the command strings in a CSV file. The program replaces the command strings with simplified strings and references, and stores the original values and their counts in a separate dataframe. It also generates a pivot table of the simplified commands and their counts. It writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
+This document describes the functional specifications of a program that simplifies and analyzes the command strings in a CSV file. The program replaces the command strings with simplified strings and references, and stores the original values and their counts in a separate original mapping dataframe. It also generates a pivot table of the simplified commands and their counts. It writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
 
 ### 1.1 Overview
-The program is designed to simplify and analyze the command strings in a CSV file. The command strings are complex and contain various components, such as paths, numbers, hostnames, etc. The program simplifies the command strings by replacing these components with simplified strings, such as PATH, NUMERIC, HOSTNAME, etc. The program also generates references for the original values that were replaced, using the index number of the original value in the references dataframe. The program stores the original values and their counts in a separate dataframe, and creates a pivot table of the simplified commands and their counts. The program writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
+The program is designed to simplify and analyze the command strings in a CSV file. The command strings are complex and contain various components, such as paths, numbers, hostnames, etc. The program simplifies the command strings by sequentially replacing these components with simplified strings, such as PATH, NUMERIC, HOSTNAME, etc., ensuring all occurrences of a component in a command string are replaced. The program also generates references for the original values that were replaced, using the index number of the original value in the references dataframe. The program stores the original values and their counts in a separate dataframe, and creates a pivot table of the simplified commands and their counts. The program writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
 
 ### 1.2 Input and Output
-The input is a CSV file that contains the command strings in a column named "Command/Events". The output is an Excel file that contains the input dataframe with the simplified values and the references, the references dataframe with the original values and their counts, and the pivot table of the simplified commands and their counts in separate tabs. The output file name is derived from the source file name by appending a suffix of "_simplified". For example, if the input file name is "commands.csv", the output file name will be "commands_simplified.xlsx".
+The input is a CSV file that contains the command strings in a column named "Command/Events", along with other relevant columns that are used for processing. The output is an Excel file that contains four tabs: 'Simplified' with the input dataframe and the simplified values and references, 'Original' with the original values and their counts from the references dataframe, 'Pattern Counts' with the counts of each pattern, and 'Command Patterns' with the pivot table of the simplified commands and their counts. The output file name is derived from the source file name by appending a suffix of "_simplified". For example, if the input file name is "commands.csv", the output file name will be "commands_simplified.xlsx".
 
 ### 1.3 Program State
 The program saves and loads the program state to and from a state file named "program_state.pkl". The program state is a dictionary that contains the following keys and values:
@@ -17,7 +17,7 @@ The program saves and loads the program state to and from a state file named "pr
 - "original": the references dataframe
 - "counter": the counter variable that tracks the progress of the program
 
-The program saves the program state to the state file every time it reaches a threshold of 0.5% of the total lines to be processed. The program loads the program state from the state file if it exists and the file name matches the current file. The program resumes from the previous state at the line indicated by the counter value. The program deletes the state file after the output file is written and saved.
+The program saves the program state to the state file every time it reaches a threshold of 0.5% of the total lines to be processed. In case of interruptions, the program can resume from the last saved state. The program loads the program state from the state file if it exists and the file name matches the current file. The program resumes from the previous state at the line indicated by the counter value. The program deletes the state file after the output file is written and saved.
 
 ## 2. Simplification and Replacement Rules
 The program simplifies and replaces the command strings with simplified strings and references using the following rules:
@@ -26,7 +26,7 @@ The program simplifies and replaces the command strings with simplified strings 
 - Replace a double quote enclosed block of 8 characters consisting of both upper and lowercase alphanumeric characters, underscore and dash, with the string "ALPHANUM8". For example, `"aBcD_1-2"` is replaced with `ALPHANUM8`.
 - Replace strings that resemble UNIX paths under the default directories, either not enclosed in quotes, or enclosed in matching single or double quotes, with the string "PATH". For example, `'/usr/bin/python'` and `"/home/user/file.txt"` are replaced with `PATH` and `PATH`, respectively. However, if a PATH is at the start of the command string, it should not be replaced or referenced. For example, `/usr/bin/python /home/user/file.txt` is not replaced or referenced, but `/usr/bin/python /home/user/file.txt` is replaced with `/usr/bin/python PATH` and referenced as `5` (where the original value `/home/user/file.txt` is in the references dataframe with an Index of 5).
 - Replace numbers between 5 and 12 digits long that follow the word "echo" with the string "NUMERIC". For example, `echo 123456789` is replaced with `echo NUMERIC` and referenced as `0` (where the original value `123456789` is in the references dataframe with an Index of 0).
-- Replace valid hostnames with the string "HOSTNAME". A valid hostname follows the regex pattern defined in the global variable `hostname_pattern`. For example, `p2eavwaabc01.intraPRD.abc.com.sg` is replaced with `HOSTNAME` and referenced as `3` (where the original value `p2eavwaabc01.intraPRD.abc.com.sg` is in the references dataframe with an Index of 3).
+- Replace valid hostnames with the string "HOSTNAME". A valid hostname follows the regex pattern defined in the global variable `hostname_pattern`. For example, `p2eavwaabc01.intraprd.abc.com.sg` is replaced with `HOSTNAME` and referenced as `3` (where the original value `p2eavwaabc01.intraprd.abc.com.sg` is in the references dataframe with an Index of 3).
 - The program does not replace or reference any other components of the command strings that do not match the rules. For example, `echo hello` is not replaced or referenced.
 
 ### 2.1 How the References are Generated
@@ -36,8 +36,8 @@ For example, the input dataframe before processing:
 
 | Command/Events | Reference |
 | -------------- | --------- |
-| echo "aBcD_1-2" /usr/bin/python 123456789 p2eavwaabc01.intraPRD.abc.com.sg |  |
-| echo "aBcD_1-2" /home/user/file.txt 987654321 p2eavwaabc01.intraPRD.abc.com.sg |  |
+| echo "aBcD_1-2" /usr/bin/python 123456789 p2eavwaabc01.intraprd.abc.com.sg |  |
+| echo "aBcD_1-2" /home/user/file.txt 987654321 p2eavwaabc01.intraprd.abc.com.sg |  |
 
 The input dataframe after processing:
 
@@ -53,7 +53,7 @@ The references dataframe should contain:
 | 1 | "aBcD_1-2" | 2 |
 | 2 | /usr/bin/python | 1 |
 | 3 | 123456789 | 1 |
-| 4 | p2eavwaabc01.intraPRD.abc.com.sg | 2 |
+| 4 | p2eavwaabc01.intraprd.abc.com.sg | 2 |
 | 5 | /home/user/file.txt | 1 |
 | 6 | 987654321 | 1 |
 
@@ -121,7 +121,7 @@ The function uses the following logic and algorithm to perform the simplificatio
 ### 3.2 Generate References Function
 The program defines a function `generate_references` that takes a list of original strings and the original mapping dataframe as arguments and returns a reference value using the reference generation rules.
 
-- The reference value is a list of integers of the reference values that correspond to the index of the original strings in the references dataframe in the same order as they appear in the command string.
+- The reference value is a list of integers of the reference values that correspond to the index of the original strings in the references dataframe in the same order as they appear in the command string. If the same original string appears multiple times, it will have the same reference value.
 - The function modifies the original mapping dataframe in place according to the reference generation rules. The original mapping dataframe contains the original values and their counts in two columns: "Value" and "Count".
 
 The function uses the following logic and algorithm to perform the reference generation:
@@ -144,7 +144,7 @@ The program defines a function `save_state` that takes the file name, the input 
   - "input_df": the input dataframe
   - "original": the references dataframe
   - "counter": the counter variable that tracks the progress of the program
-- The function saves the program state to the state file every time it reaches a threshold of 0.5% of the total lines to be processed.
+- The function saves the program state to the state file at regular intervals, specifically every time it reaches a threshold of 0.5% of the total lines to be processed.
 
 The function uses the following logic and algorithm to perform the state saving:
 
@@ -227,7 +227,7 @@ The function uses the following logic and algorithm to perform the output writin
 ### 3.7 Process File Function
 The program defines a function `process_file` that takes the file name as an argument and performs the following steps:
 
-- Load the program state from the state file using the `load_state` function and assign the returned values to `input_df`, `original`, and `counter`.
+- Load the program state from the state file using the `load_state` function and assign the returned values to `input_df`, `original`, and `counter`. If the program was interrupted during a previous run, it will continue from where it left off.
 - If `input_df` and `original` are None, create an empty dataframe named `original` with two columns: "Value" and "Count", then read in the CSV file and store it in a pandas dataframe named `input_df`.
 - Get the total number of rows in the `input_df` dataframe and assign it to a variable named `total`.
 - Assign the current time to a variable named `start_time`.
@@ -257,7 +257,14 @@ The program uses the following logic and algorithm to perform the simplification
   - Call the process file function with the file name as the argument
 
 ## 5. Details of the Regexs and the Hostname Specifications
-The program uses the following regexs and hostname specifications to match and replace the command strings according to the rules:
+The program uses the following regexs and hostname specifications to match and replace the command strings according to the rules. Here are some examples of command strings that match each regex pattern:
+
+| Regex Pattern | Example Command String |
+| --- | --- |
+| ALPHANUM8 | `echo "aBcD_1-2"` |
+| PATH | `ls /usr/bin/python` |
+| NUMERIC | `echo 123456789` |
+| HOSTNAME | `ping p2eavwaabc01.intraprd.abc.com.sg` |
 
 ### 5.1 Regex for Matching Paths
 The program uses the following regex for matching paths:
@@ -286,7 +293,7 @@ The regex does not capture the word "echo" in the group, only the number.
 The program uses the following regex for matching hostnames:
 
 ```python
-r"(?P<environment>[p|t|q])(?P<location>[2|3])(?P<segment>[e|a])(?P<tier>[a|d|g|i|m|w])(?P<virtualization>[v|p])(?P<operating_system>[w|x|r|s|k])(?P<application>[a-z0-9]{3,4})(?P<server>[0-9]{2})(?:\.(?P<intra_inter>(intra|inter))(?P<suffix_env>(PRD|QAT))\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+)?\b"
+r"(?P<environment>[p|t|q])(?P<location>[2|3])(?P<segment>[e|a])(?P<tier>[a|d|g|i|m|w])(?P<virtualization>[v|p])(?P<operating_system>[w|x|r|s|k])(?P<application>[a-z0-9]{3,4})(?P<server>[0-9]{2})(?:\.(?P<intra_inter>(intra|inter))(?P<suffix_env>(prd|qat))\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+)?\b"
 ```
 
 This regex matches any string that follows the hostname format of:
@@ -333,7 +340,7 @@ Each component has a specific meaning and a set of valid characters, as describe
 The environment, segment, intra_inter, and suffix_env must be consistent. For example, if the environment is production, the suffix_env must be prd. If the segment is intranet, the intra_inter must be intra. The suffix components must match the sensitive values for XXX, TLD, and YY. For example, if XXX is abc, TLD is com, and YY is sg, the suffix must be intraprd.abc.com.sg or interprd.abc.com.sg. The hostname must be converted to lowercase using casefold() before matching the regex and the specifications. This is to avoid case sensitive issues. For example, P2EAVWAABC01.INTRAPRD.ABC.COM.SG and p2eavwaabc01.intraprd.abc.com.sg are considered the same hostname.
 
 ## 6. Test Cases and Scenarios
-The program should be tested with various test cases and scenarios to ensure its correctness and robustness. The following are some examples of test cases and scenarios that can be used to test the program:
+The program should be tested with various test cases and scenarios, including edge cases and cases that test the program's error handling, to ensure its correctness and robustness. The following are some examples of test cases and scenarios that can be used to test the program:
 
 ### 6.1 Test Case 1: Simple Command String
 The input CSV file contains a simple command string that does not have any components that need to be simplified or replaced. The program should not modify the command string or generate any references. For example, the input dataframe before processing:
@@ -439,7 +446,7 @@ The input CSV file contains a command string that has a valid hostname that foll
 
 | Command/Events | Reference |
 | -------------- | --------- |
-| echo p2eavwaabc01.intraPRD.abc.com.sg |  |
+| echo p2eavwaabc01.intraprd.abc.com.sg |  |
 
 The input dataframe after processing:
 
@@ -451,7 +458,7 @@ The references dataframe should contain:
 
 | Index | Value | Count |
 | ----- | ----- | ----- |
-| 1 | p2eavwaabc01.intraPRD.abc.com.sg | 1 |
+| 1 | p2eavwaabc01.intraprd.abc.com.sg | 1 |
 
 The pivot table should contain:
 
