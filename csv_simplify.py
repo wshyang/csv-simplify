@@ -58,27 +58,28 @@ def simplify_and_replace(command):
     return simplified, original, replacement
 
 # Define the function for generating the references
-def generate_references(original, originals):
+def generate_references(originals, original_df):
     # Initialize the reference value as an empty list
-    reference = []
+    references = []
+
     # For each original string, do the following:
-    for o in original:
+    for original in originals:
         # Check if the original string is already in the original mapping dataframe
-        if o in originals["Value"].values:
-            # Get the index of the original string in the original mapping dataframe
-            index = originals[originals["Value"] == o].index[0]
+        if original_df['Value'].isin([original]).any():
+            # If yes, get the index of the original string in the original mapping dataframe
+            index = original_df[original_df['Value'] == original].index[0]
             # Increment the count of the original string in the original mapping dataframe by one
-            originals.loc[index, "Count"] += 1
-        # If the original string is not in the original mapping dataframe, do the following:
+            original_df.loc[index, 'Count'] += 1
         else:
-            # Get the index of the original string as the length of the original mapping dataframe
-            index = len(originals)
+            # If no, get the index of the original string as the length of the original mapping dataframe
+            index = len(original_df)
             # Append the original string and its count to the original mapping dataframe
-            originals = originals.append({"Value": o, "Count": 1}, ignore_index=True)
+            original_df = original_df.append({'Value': original, 'Count': 1}, ignore_index=True)
+
         # Generate the reference value by appending the index number to the list
-        reference.append(index)
-    # Return the reference value and the updated original mapping dataframe
-    return reference, originals
+        references.append(index)
+
+    return references, original_df
 
 # Define the function for saving the program state
 def save_state(file_name, input_df, originals, counter):
