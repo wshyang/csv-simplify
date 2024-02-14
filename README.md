@@ -128,7 +128,7 @@ The function uses the following logic and algorithm to perform the reference gen
 
 - Initialize the reference value as an empty list
 - For each original string, do the following:
-  - Check if the original string is already in the original mapping dataframe
+  - Check if the original string is already in the original mapping dataframe using the `isin()` function provided by pandas, which checks whether each element in the DataFrame is contained in values. `isin()` is highly optimized and much faster than using Python's in keyword.
   - If yes, get the index of the original string in the original mapping dataframe
   - Increment the count of the original string in the original mapping dataframe by one
   - If no, get the index of the original string as the length of the original mapping dataframe
