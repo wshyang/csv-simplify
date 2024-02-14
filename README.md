@@ -132,7 +132,7 @@ The function uses the following logic and algorithm to perform the reference gen
   - If yes, get the index of the original string in the original mapping dataframe
   - Increment the count of the original string in the original mapping dataframe by one
   - If no, get the index of the original string as the length of the original mapping dataframe
-  - Append the original string and its count to the original mapping dataframe
+  - Append the original string and its count to the original mapping dataframe using `pandas.concat` instead of `append` to avoid FutureWarning in pandas version 1.4.0 and later
   - Generate the reference value by appending the index number to the list
 - Return the reference value
 
