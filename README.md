@@ -269,7 +269,7 @@ The program uses the following regexs and hostname specifications to match and r
 ### 5.1 Regex for Matching Paths
 The program uses the following regex for matching paths:
 
-`path_pattern = r'(?:(?:[\'"])(/[^\'"]+)(?:[\'"]))|(?:(?<=\s)(/[^\'"\s]+)(?=\s))'`
+`path_pattern = r"(/(bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)(/[^/\s]+)*)|('[^']+')|(\"[^\"]+\")"`
 
 This regex matches the following cases:
 
