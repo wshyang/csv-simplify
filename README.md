@@ -109,14 +109,14 @@ The function uses the following logic and algorithm to perform the simplificatio
 - For each command string, do the following:
   - Initialize the simplified string and the dictionary of original and replacement strings
   - For each pattern, do the following:
-    - Find all the parts of the command string that match the pattern using `re.finditer` and `group(0)`
-    - If the part is a path and it is at the start of the command string, do not replace or reference it
-    - Otherwise, add the part and its position to the dictionary of matches
+      - Find all the parts of the command string that match the pattern using `re.finditer` and `group(0)`
+      - If the part is a path and it is at the start of the command string, do not replace or reference it
+      - Otherwise, add the part, its position, and its pattern index to the dictionary of matches
   - Sort the dictionary of matches by the keys (positions) in ascending order
   - For each match in the dictionary, do the following:
-    - Find the index of the pattern and the string that correspond to the match
-    - Replace the match with the string in the simplified string
-    - Add the match and the string to the dictionary of original and replacement strings with the match start position as the key
+      - Get the original string and the pattern index from the match tuple
+      - Replace the original string with the replacement string in the simplified string
+      - Add the original string and the replacement string to the lists of original and replacement strings
 - Return the simplified string and the dictionary of original and replacement strings
 
 ### 3.2 Generate References Function
