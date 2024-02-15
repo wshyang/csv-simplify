@@ -98,25 +98,26 @@ The pivot table should contain:
 The program defines the following functions to perform the simplification and replacement of the command strings, the generation of the references, the saving and loading of the program state, the writing of the output file, and the processing of the input file.
 
 ### 3.1 Simplify and Replace Function
-The program defines a function `simplify_and_replace` that takes a command string as an argument and returns a simplified string, a list of original strings, and a list of replacement strings that were replaced using the simplification and replacement rules. 
+The program defines a function `simplify_and_replace` that takes a command string as an argument and returns a simplified string, a dictionary of original and replacement strings that were replaced using the simplification and replacement rules. 
 
 - The simplified string is the command string with the original strings replaced by the replacement strings according to the rules.
-- The original list is the list of original strings that were replaced by the replacement strings in the same order as they appear in the command string.
-- The replacement list is the list of replacement strings that replaced the original strings in the same order as they appear in the command string.
+- The dictionary of original and replacement strings has the match start positions as the keys and the tuples of original and replacement strings as the values. The order of the keys in the dictionary corresponds to the order of the references in the original command string.
 
 The function uses the following logic and algorithm to perform the simplification and replacement:
 
 - Define the arrays of regex strings for the match patterns and replacement strings
 - For each command string, do the following:
-  - Initialize the simplified string and the lists of original and replacement strings
+  - Initialize the simplified string and the dictionary of original and replacement strings
   - For each pattern, do the following:
-    - Find the part of the command string that matches the pattern using `re.match` and `group(0)`
+    - Find all the parts of the command string that match the pattern using `re.finditer` and `group(0)`
     - If the part is a path and it is at the start of the command string, do not replace or reference it
-    - Otherwise, replace the part with the corresponding replacement string and add it to the lists of original and replacement strings
-- Replace the match with the replacement string
-- Append the match to the list of original strings
-- Append the replacement string to the list of replacement strings
-- Return the simplified string, the list of original strings, and the list of replacement strings
+    - Otherwise, add the part and its position to the dictionary of matches
+  - Sort the dictionary of matches by the keys (positions) in ascending order
+  - For each match in the dictionary, do the following:
+    - Find the index of the pattern and the string that correspond to the match
+    - Replace the match with the string in the simplified string
+    - Add the match and the string to the dictionary of original and replacement strings with the match start position as the key
+- Return the simplified string and the dictionary of original and replacement strings
 
 ### 3.2 Generate References Function
 The program defines a function `generate_references` that takes a list of original strings and the original mapping dataframe as arguments and returns a reference value using the reference generation rules.
