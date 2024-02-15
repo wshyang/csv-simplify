@@ -36,24 +36,33 @@ def simplify_and_replace(command):
     # Define the arrays of regex strings for the match patterns and replacement strings
     patterns = [alphanum8_pattern, path_pattern, numeric_pattern, hostname_pattern]
     strings = [alphanum8_string, path_string, numeric_string, hostname_string]
+    # Initialize an empty dictionary to store the list of matches, their positions, and their pattern indices
+    matches_dict = {}
     # For each pattern, do the following:
     for i in range(len(patterns)):
-        # Find the part of the command string that matches the pattern using re.match and group(0)
-        match = re.match(patterns[i], simplified)
-        # If the part is a path and it is at the start of the command string, do not replace or reference it
-        if match and strings[i] == path_string and match.start() == 0:
-            continue
-        # Otherwise, replace the part with the corresponding replacement string and add it to the lists of original and replacement strings
-        else:
-            while match:
-                # Replace the match with the replacement string
-                simplified = simplified.replace(match.group(0), strings[i])
-                # Append the match to the list of original strings
-                original.append(match.group(0))
-                # Append the replacement string to the list of replacement strings
-                replacement.append(strings[i])
-                # Find the next match in the simplified string
-                match = re.match(patterns[i], simplified)
+        # Find all the parts of the command string that match the pattern using re.finditer and group(0)
+        matches = re.finditer(patterns[i], simplified)
+        for match in matches:
+            # If the part is a path and it is at the start of the command string, do not replace or reference it
+            if strings[i] == path_string and match.start() == 0:
+                continue
+            # Otherwise, add the part, its position, and its pattern index to the dictionary of matches
+            else:
+                matches_dict[match.start()] = (match.group(0), i)
+    # Sort the dictionary of matches by the keys (positions) in ascending order
+    matches_dict = dict(sorted(matches_dict.items()))
+    # For each match in the dictionary, do the following:
+    for position, match in matches_dict.items():
+        # Get the original string and the pattern index from the match tuple
+        original_string, index = match
+        # Get the replacement string from the strings list using the pattern index
+        replacement_string = strings[index]
+        # Replace the original string with the replacement string in the simplified string
+        simplified = simplified.replace(original_string, replacement_string)
+        # Append the original string to the list of original strings
+        original.append(original_string)
+        # Append the replacement string to the list of replacement strings
+        replacement.append(replacement_string)
     # Return the simplified string, the list of original strings, and the list of replacement strings
     return simplified, original, replacement
 
