@@ -266,17 +266,34 @@ The program uses the following regexs and hostname specifications to match and r
 | NUMERIC | `echo 123456789` |
 | HOSTNAME | `ping p2eavwaabc01.intraprd.abc.com.sg` |
 
-### 5.1 Regex for Matching Paths
-The program uses the following regex for matching paths:
+### 5.1 Path Pattern
+The program defines a regex pattern for matching paths that resemble UNIX paths under the default directories, either not enclosed in quotes, or enclosed in matching single or double quotes, with the following rules:
 
-`path_pattern = r"(/(bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)(/[^/\s]+)*)|('[^']+')|(\"[^\"]+\")"`
+- The path must start with one of the following directories in root /: bin, boot, dev, etc, home, lib, lib64, media, mnt, opt, proc, root, run, sbin, srv, sys, tmp, usr, or var
+- The path may have zero or more subdirectories that follow the same pattern as the root directory
+- The path may be enclosed within either single quotes or double quotes, and may have whitespace characters within the quotes
+- The path must not have any whitespace characters outside the quotes
+- The path must not be part of a longer string that is not a path, such as `/var/tmp/file.txt"`
 
-This regex matches the following cases:
+The regex pattern for the path is:
 
-- A path that is enclosed in single or double quotes, such as `'/usr/bin/python'` or `"/home/user/file.txt"`
-- A path that is not enclosed in quotes, but is preceded and followed by a whitespace, such as `/usr/bin/python /home/user/file.txt`
+```regex
+(?<!^)(["']?)(/((?:bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)(/[^/\s]+)*))\1(?!\S)
+```
 
-The regex captures the path in a group, excluding the quotes if present.
+The regex pattern has the following components:
+
+- `(?<!^)` is a negative lookbehind that asserts that the path is not at the start of the command string
+- `(["']?)` is a group that matches an optional single or double quote at the beginning of the path, and captures it for later reference
+- `(/((?:bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)(/[^/\s]+)*))` is a group that matches and captures the whole path in its entirety (without quotes). It consists of the following subgroups:
+    - `/` matches a slash at the beginning of the path
+    - `((?:bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)(/[^/\s]+)*)` is a non capturing group that matches the root directory and any subdirectories that follow the same pattern
+        - `(?:bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)` is a non capturing group that matches any of the specified directories in root /
+        - `(/[^/\s]+)*` matches zero or more subdirectories that follow the same pattern as the root directory
+- `\1` matches the same quote as the first group, or nothing if there was no quote, ensuring that the path has matching quotes at the beginning and end, or no quotes at all
+- `(?!\S)` is a negative lookahead that asserts that the next character is not a non-whitespace character, preventing the path from being part of a longer string that is not a path
+
+The program replaces the paths that match this pattern with the string "PATH", and generates references for the original values in the original mapping dataframe.
 
 ### 5.2 Regex for Matching Numbers
 The program uses the following regex for matching numbers:
