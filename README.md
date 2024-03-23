@@ -4,7 +4,7 @@
 This document describes the functional specifications of a program that simplifies and analyzes the command strings in a CSV file. The program replaces the command strings with simplified strings and references, and stores the original values and their counts in a separate original mapping dataframe. It also generates a pivot table of the simplified commands and their counts. It writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
 
 ### 1.1 Overview
-The program is designed to simplify and analyze the command strings in a CSV file. The command strings are complex and contain various components, such as paths, numbers, hostnames, etc. The program simplifies the command strings by sequentially replacing these components with simplified strings, such as PATH, NUMERIC, HOSTNAME, etc., ensuring all occurrences of a component in a command string are replaced. The program also generates references for the original values that were replaced, using the index number of the original value in the original mapping dataframe. The program stores the original values and their counts in a separate dataframe, and creates a pivot table of the simplified commands and their counts. The program writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
+The program is designed to simplify and analyze the command strings in a CSV file. The command strings are complex and contain various components, such as paths, numbers, hostnames, etc. The program simplifies the command strings by sequentially replacing these components with simplified strings, such as PATH, NUMERIC, HOSTNAME, etc., ensuring all occurrences of a component in a command string are replaced. The program also generates references for the original values that were replaced, using the index number of the original value in the original mapping dictionary. The program stores the original values and their counts in a separate dictionary, and creates a pivot table of the simplified commands and their counts. The program writes the output to an Excel file with four tabs: Simplified, Original, Pattern Counts, and Command Patterns.
 
 ### 1.2 Input and Output
 The input is a CSV file that contains the command strings in a column named "Command/Events", along with other relevant columns that are used for processing. The output is an Excel file that contains four tabs: 'Simplified' with the input dataframe and the simplified values and references, 'Original' with the original values and their counts from the original mapping dataframe, 'Pattern Counts' with the counts of each pattern, and 'Command Patterns' with the pivot table of the simplified commands and their counts. The output file name is derived from the source file name by appending a suffix of "_simplified". For example, if the input file name is "commands.csv", the output file name will be "commands_simplified.xlsx".
@@ -46,7 +46,7 @@ The input dataframe after processing:
 | echo ALPHANUM8 PATH NUMERIC HOSTNAME | [1, 2, 3, 4] |
 | echo ALPHANUM8 PATH NUMERIC HOSTNAME | [1, 5, 6, 4] |
 
-The original mapping dataframe should contain:
+The original mapping dictionary should contain:
 
 | Index | Value | Count |
 | ----- | ----- | ----- |
@@ -227,21 +227,21 @@ The function uses the following logic and algorithm to perform the output writin
 ### 3.7 Process File Function
 The program defines a function `process_file` that takes the file name as an argument and performs the following steps:
 
-- Load the program state from the state file using the `load_state` function and assign the returned values to `input_df`, `original`, and `counter`. If the program was interrupted during a previous run, it will continue from where it left off.
-- If `input_df` and `original` are None, create an empty dataframe named `original` with two columns: "Value" and "Count", then read in the CSV file and store it in a pandas dataframe named `input_df`.
+- Load the program state from the state file using the `load_state` function and assign the returned values to `input_df`, `original_dict`, and `counter`. If the program was interrupted during a previous run, it will continue from where it left off.
+- If `input_df` and `original_dict` are None, create an empty dictionary named `original_dict` with two keys: "Value" and "Count", then read in the CSV file and store it in a pandas dataframe named `input_df`.
 - Get the total number of rows in the `input_df` dataframe and assign it to a variable named `total`.
 - Assign the current time to a variable named `start_time`.
 - Loop through the rows of the `input_df` dataframe starting from the `counter` value and get the command string from the "Command/Events" column.
 - Simplify and replace the command string with the simplified string and the list of original strings using the `simplify_and_replace` function.
-- Generate the reference value and the updated original mapping dataframe using the `generate_references` function with the list of original strings and the original mapping dataframe as arguments.
+- Generate the reference value and the updated original mapping dictionary using the `generate_references` function with the list of original strings and the original mapping dictionary as arguments.
   - Update the `input_df` dataframe with the simplified string and the reference value in a new column named "Reference".
   - Increment the `counter` by one.
 - Every time the counter is a multiple of 0.5% of the total number of lines, do the following:
-  - Call the save_state function with the file name, the input dataframe, the original mapping dataframe, and the counter as arguments. This will save the current progress of the program to a state file.
+  - Call the save_state function with the file name, the input dataframe, the original mapping dictionary, and the counter as arguments. This will save the current progress of the program to a state file.
   - Print a message to the standard output that shows how many lines have been processed and what percentage of the total that is.
   - Calculate the average time per line and the remaining time based on the current time and the start time. Print a message to the standard output that shows the estimated time to finish the program.
 - After the loop is finished, create a pivot table of the simplified commands and their counts using the `pivot_table` function of pandas. The pivot table has a column named "Pattern" that contains the simplified command strings and a column named "Count" that contains the counts of the simplified command strings.
-- Write the `input_df`, the `original` dataframe and the pivot table to the output Excel file using the `write_output` function.
+- Write the `input_df`, the `original_dict` dictionary and the pivot table to the output Excel file using the `write_output` function.
 - Delete the state file using the `delete_state` function.
 
 ## 4. Logic and Algorithm
